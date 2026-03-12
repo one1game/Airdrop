@@ -32,7 +32,7 @@ justify-content:space-between;
 align-items:center;
 border-bottom:1px solid #30363d;
 padding-bottom:10px;
-margin-bottom:20px;
+margin-bottom:10px;
 }
 
 .header h1{
@@ -53,6 +53,7 @@ border-radius:8px;
 margin:10px 0;
 overflow:hidden;
 white-space:nowrap;
+font-size:12px;
 }
 
 #app{
@@ -269,16 +270,27 @@ try{
 
 loadData();
 
-// Бегущая строка крипты
+// Бегущая строка крипты с Gas для ETH
 async function loadCryptoTicker(){
     const ticker = document.getElementById('crypto-ticker');
     try{
-        const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,cardano&vs_currencies=usd');
+        const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,ton,celestia,arbitrum,sui,strk,jupiter,binancecoin&vs_currencies=usd');
         const data = await res.json();
-        let text = `BTC: $${data.bitcoin.usd} | ETH: $${data.ethereum.usd} | ADA: $${data.cardano.usd}`;
+
+        // Получаем Gas для ETH
+        let ethGas = '';
+        try{
+            const gasRes = await fetch('https://ethgasstation.info/api/ethgasAPI.json?api-key=YOUR_API_KEY');
+            const gasData = await gasRes.json();
+            ethGas = ` | ETH Gas: ${Math.round(gasData.average/10)} Gwei`;
+        }catch(e){
+            ethGas = ' | ETH Gas: —';
+        }
+
+        let text = `BTC: $${data.bitcoin.usd} — база всего рынка | ETH: $${data.ethereum.usd} — главная сеть для крупных дропов${ethGas} | SOL: $${data.solana.usd} — топ-1 сеть по количеству новых проектов | TON: $${data.ton.usd} — Telegram | TIA: $${data.celestia.usd} — стейкинг | ARB: $${data.arbitrum.usd} — L2 сеть | SUI: $${data.sui.usd} — быстрые транзакции | STRK: $${data.strk.usd} — ориентир проектов | JUP: $${data.jupiter.usd} — агрегатор Solana | BNB: $${data.binancecoin.usd} — BSC сеть`;
+
         ticker.innerText = text;
 
-        // анимация бегущей строки
         let offset = ticker.offsetWidth;
         function scroll(){
             offset--;
