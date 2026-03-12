@@ -5,149 +5,147 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Airdrop Terminal</title>
 
-<!-- Telegram Mini App API -->
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <style>
 :root { 
---bg: #0d1117; 
---card: #161b22; 
---accent: #58a6ff; 
---text: #c9d1d9; 
---dim: #8b949e; 
---green: #238636;
+--bg:#0d1117;
+--card:#161b22;
+--accent:#58a6ff;
+--text:#c9d1d9;
+--dim:#8b949e;
+--green:#238636;
 }
 
-body { 
-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-background: var(--bg); 
-color: var(--text); 
-margin: 0; 
-padding: 15px; 
+body{
+font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+background:var(--bg);
+color:var(--text);
+margin:0;
+padding:15px;
 }
 
-.header { 
-display: flex; 
-justify-content: space-between; 
-align-items: center; 
-border-bottom: 1px solid #30363d; 
-padding-bottom: 10px; 
-margin-bottom: 20px; 
+.header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+border-bottom:1px solid #30363d;
+padding-bottom:10px;
+margin-bottom:20px;
 }
 
-.header h1 { 
-font-size: 18px; 
-color: var(--accent); 
-margin: 0; 
-text-transform: uppercase;
+.header h1{
+font-size:18px;
+color:var(--accent);
+margin:0;
+text-transform:uppercase;
 }
 
-.counter {
-font-size: 12px;
-color: var(--dim);
+.counter{font-size:12px;color:var(--dim);}
+.user{font-size:12px;color:var(--dim);margin-top:5px;}
+
+#app{
+display:flex;
+flex-direction:column;
+gap:15px;
 }
 
-.user {
-font-size: 12px;
-color: var(--dim);
-margin-top:5px;
+.card{
+background:var(--card);
+border:1px solid #30363d;
+border-radius:12px;
+padding:16px;
 }
 
-#app { 
-display: flex; 
-flex-direction: column; 
-gap: 15px; 
+.title{
+font-size:20px;
+font-weight:bold;
+margin-bottom:10px;
+display:block;
 }
 
-.card { 
-background: var(--card); 
-border: 1px solid #30363d; 
-border-radius: 12px; 
-padding: 16px; 
+.status-badge{
+display:inline-block;
+background:var(--green);
+color:white;
+font-size:10px;
+padding:4px 8px;
+border-radius:4px;
+margin-bottom:8px;
+text-transform:uppercase;
 }
 
-.title { 
-font-size: 20px; 
-font-weight: bold; 
-margin-bottom: 12px; 
-display: block;
+.category{
+font-size:11px;
+color:var(--accent);
+margin-bottom:10px;
 }
 
-.status-badge {
-display: inline-block;
-background: var(--green);
-color: white;
-font-size: 10px;
-padding: 4px 8px;
-border-radius: 4px;
-margin-bottom: 10px;
-text-transform: uppercase;
+.grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px;
+margin-bottom:15px;
 }
 
-.grid { 
-display: grid; 
-grid-template-columns: 1fr 1fr; 
-gap: 10px; 
-margin-bottom: 15px; 
+.item{
+background:rgba(255,255,255,0.03);
+padding:10px;
+border-radius:8px;
 }
 
-.item { 
-background: rgba(255,255,255,0.03); 
-padding: 10px; 
-border-radius: 8px; 
+.label{
+font-size:10px;
+color:var(--dim);
+text-transform:uppercase;
+display:block;
+margin-bottom:4px;
 }
 
-.label { 
-font-size: 10px; 
-color: var(--dim); 
-display: block; 
-text-transform: uppercase; 
-margin-bottom: 4px; 
+.val{
+font-size:14px;
+font-weight:600;
 }
 
-.val { 
-font-size: 14px; 
-font-weight: 600; 
+.val.free{
+color:#7ee787;
 }
 
-.val.free {
-color: #7ee787;
+.countdown{
+font-size:12px;
+color:#f2cc60;
+margin-bottom:10px;
 }
 
-.btns { 
-display: flex; 
-gap: 10px; 
+.btns{
+display:flex;
+gap:10px;
 }
 
-.btn { 
-flex: 1; 
-padding: 12px; 
-border-radius: 8px; 
-text-align: center; 
-text-decoration: none; 
-font-weight: bold; 
-font-size: 14px; 
-transition: 0.2s; 
+.btn{
+flex:1;
+padding:12px;
+border-radius:8px;
+text-align:center;
+text-decoration:none;
+font-weight:bold;
+font-size:14px;
 }
 
-.btn-guide { 
-background: #30363d; 
-color: white; 
+.btn-guide{
+background:#30363d;
+color:white;
 }
 
-.btn-main { 
-background: var(--accent); 
-color: #0d1117; 
+.btn-main{
+background:var(--accent);
+color:#0d1117;
 }
 
-.btn:active { 
-transform: scale(0.98); 
-}
-
-.loading { 
-text-align: center; 
-color: var(--dim); 
-margin-top: 50px; 
+.loading{
+text-align:center;
+color:var(--dim);
+margin-top:50px;
 }
 </style>
 </head>
@@ -168,12 +166,11 @@ margin-top: 50px;
 
 <script>
 
-//////////////////////////
-// Telegram Mini App API
-//////////////////////////
+////////////////////////////
+// Telegram API
+////////////////////////////
 
 const tg = window.Telegram.WebApp;
-
 tg.ready();
 tg.expand();
 
@@ -184,55 +181,90 @@ document.getElementById("user").innerHTML =
 `User: ${user.username || user.first_name}`;
 }
 
-//////////////////////////
+////////////////////////////
 // API таблицы
-//////////////////////////
+////////////////////////////
 
-const API_URL = 'https://api.sheetbest.com/sheets/3722b65c-1f74-43cc-ab93-fee225a8c419';
+const API_URL='https://api.sheetbest.com/sheets/3722b65c-1f74-43cc-ab93-fee225a8c419';
 
-async function loadData() {
+function getCountdown(date){
 
-try {
+if(!date) return "—";
 
-const response = await fetch(API_URL);
-const data = await response.json();
+const target=new Date(date);
+const now=new Date();
 
-const container = document.getElementById('app');
+const diff=target-now;
 
-if (!data || data.length === 0) {
-container.innerHTML = '<div class="loading">Нет данных</div>';
+if(diff<=0) return "Drop soon";
+
+const days=Math.floor(diff/(1000*60*60*24));
+const hours=Math.floor((diff/(1000*60*60))%24);
+
+return `${days}d ${hours}h`;
+
+}
+
+async function loadData(){
+
+try{
+
+const response=await fetch(API_URL);
+let data=await response.json();
+
+const container=document.getElementById('app');
+
+if(!data||data.length===0){
+container.innerHTML='<div class="loading">Нет данных</div>';
 return;
 }
 
-document.getElementById('counter').innerHTML = `${data.length} проектов`;
+document.getElementById('counter').innerHTML=`${data.length} проектов`;
 
-container.innerHTML = '';
+container.innerHTML='';
 
-data.forEach(item => {
+////////////////////////////
+// сортировка по priority
+////////////////////////////
 
-const name = item.name || 'Без названия';
-const status = item.status || 'Active';
-const cost = item.cost || '$0';
-const time = item.time || '—';
-const raised = item.raised || '—';
-const type = item.type || '—';
-const guide = item.guide_link || '#';
-const ref = item.ref_link || '#';
+data.sort((a,b)=> (a.priority||99)-(b.priority||99));
 
-const isFree = cost === '$0' || cost === '0' || cost === 'Бесплатно';
+data.forEach(item=>{
 
-const card = `
+const name=item.name||'Без названия';
+const status=item.status||'ACTIVE';
+const category=item.category||'—';
+const cost=item.cost||'$0';
+const time=item.time||'—';
+const raised=item.raised||'—';
+const type=item.type||'—';
+const potential=item.potential||'—';
+const difficulty=item.difficulty||'—';
+const guide=item.guide_link||'#';
+const ref=item.ref_link||'#';
+const drop=item.drop_date||'';
+
+const countdown=getCountdown(drop);
+
+const isFree=cost==='$0'||cost==='0'||cost==='Бесплатно';
+
+const card=`
+
 <div class="card">
 
 <div class="status-badge">${status}</div>
 
 <span class="title">${name}</span>
 
+<div class="category">${category}</div>
+
+<div class="countdown">Drop: ${countdown}</div>
+
 <div class="grid">
 
 <div class="item">
 <span class="label">Траты</span>
-<span class="val ${isFree ? 'free' : ''}">${cost}</span>
+<span class="val ${isFree?'free':''}">${cost}</span>
 </div>
 
 <div class="item">
@@ -241,13 +273,23 @@ const card = `
 </div>
 
 <div class="item">
-<span class="label">Собрано</span>
+<span class="label">Инвестиции</span>
 <span class="val">${raised}</span>
 </div>
 
 <div class="item">
 <span class="label">Тип</span>
 <span class="val">${type}</span>
+</div>
+
+<div class="item">
+<span class="label">Potential</span>
+<span class="val">${potential}</span>
+</div>
+
+<div class="item">
+<span class="label">Сложность</span>
+<span class="val">${difficulty}</span>
 </div>
 
 </div>
@@ -267,14 +309,14 @@ const card = `
 </div>
 `;
 
-container.innerHTML += card;
+container.innerHTML+=card;
 
 });
 
 }
 catch(error){
 
-document.getElementById('app').innerHTML =
+document.getElementById('app').innerHTML=
 `<div class="loading">Ошибка: ${error.message}</div>`;
 
 }
