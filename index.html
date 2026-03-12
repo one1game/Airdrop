@@ -28,11 +28,17 @@ padding:15px;
 
 .header{
 display:flex;
-justify-content:space-between;
-align-items:center;
+flex-direction:column;
 border-bottom:1px solid #30363d;
 padding-bottom:10px;
-margin-bottom:10px;
+margin-bottom:20px;
+}
+
+.header-top{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:5px;
 }
 
 .header h1{
@@ -46,14 +52,12 @@ text-transform:uppercase;
 .user{font-size:12px;color:var(--dim);margin-top:5px;}
 
 #crypto-ticker{
-background:#161b22;
-color:#58a6ff;
-padding:6px 12px;
-border-radius:8px;
-margin:10px 0;
-overflow:hidden;
-white-space:nowrap;
 font-size:12px;
+color:#f2cc60;
+white-space:nowrap;
+overflow:hidden;
+display:block;
+margin-bottom:10px;
 }
 
 #app{
@@ -172,15 +176,13 @@ margin-top:50px;
 <body>
 
 <div class="header">
-<div>
+<div class="header-top">
 <h1>Airdrop Terminal</h1>
 <div class="user" id="user"></div>
 </div>
+<div id="crypto-ticker">Загрузка курсов крипты...</div>
 <div class="counter" id="counter">0 проектов</div>
 </div>
-
-<!-- Бегущая строка крипты -->
-<div id="crypto-ticker">Загрузка курса крипты...</div>
 
 <div id="app">
 <div class="loading">Загрузка...</div>
@@ -194,122 +196,122 @@ tg.expand();
 
 let user = tg.initDataUnsafe?.user;
 if(user){
-    document.getElementById("user").innerHTML = `User: ${user.username || user.first_name}`;
+document.getElementById("user").innerHTML =
+`User: ${user.username || user.first_name}`;
 }
 
 // API таблицы
 const API_URL='https://api.sheetbest.com/sheets/3722b65c-1f74-43cc-ab93-fee225a8c419';
 
-// Загрузка данных аирдропов
 async function loadData(){
 try{
-    const response=await fetch(API_URL);
-    let data=await response.json();
-    const container=document.getElementById('app');
+const response=await fetch(API_URL);
+let data=await response.json();
+const container=document.getElementById('app');
 
-    if(!data || data.length===0){
-        container.innerHTML='<div class="loading">Нет данных</div>';
-        return;
-    }
+if(!data || data.length===0){
+container.innerHTML='<div class="loading">Нет данных</div>';
+return;
+}
 
-    document.getElementById('counter').innerHTML=`${data.length} проектов`;
-    container.innerHTML='';
+document.getElementById('counter').innerHTML=`${data.length} проектов`;
 
-    // сортировка по priority (для админа)
-    data.sort((a,b)=> (a.priority||99)-(b.priority||99));
+container.innerHTML='';
 
-    data.forEach(item=>{
-        const name=item.name||'Без названия';
-        const status=item.status||'ACTIVE';
-        const category=item.category||'—';
-        const cost=item.cost||'$0';
-        const time=item.time||'—';
-        const raised=item.raised||'—';
-        const type=item.type||'—';
-        const potential=item.potential||'—';
-        const guide=item.guide_link||'';
-        const ref=item.ref_link||'';
-        const drop=item.drop_date||'—';
+// сортировка по priority (для админа)
+data.sort((a,b)=> (a.priority||99)-(b.priority||99));
 
-        const isFree=cost==='$0'||cost==='0'||cost==='Бесплатно';
+data.forEach(item=>{
+const name=item.name||'Без названия';
+const status=item.status||'ACTIVE';
+const category=item.category||'—';
+const cost=item.cost||'$0';
+const time=item.time||'—';
+const raised=item.raised||'—';
+const type=item.type||'—';
+const potential=item.potential||'—';
+const guide=item.guide_link||'';
+const ref=item.ref_link||'';
+const drop=item.drop_date||'—';
 
-        // кнопки
-        const guideBtn = guide
-        ? `<a href="${guide}" target="_blank" class="btn btn-guide">Инструкция</a>`
-        : `<div class="btn btn-guide disabled">Инструкция</div>`;
+const isFree=cost==='$0'||cost==='0'||cost==='Бесплатно';
 
-        const refBtn = ref
-        ? `<a href="${ref}" target="_blank" class="btn btn-main">Фармить</a>`
-        : `<div class="btn btn-main disabled">Фармить</div>`;
+// кнопки
+const guideBtn = guide
+? `<a href="${guide}" target="_blank" class="btn btn-guide">Инструкция</a>`
+: `<div class="btn btn-guide disabled">Инструкция</div>`;
 
-        const card=`
-        <div class="card">
-            <div class="status-badge">${status}</div>
-            <span class="title">${name}</span>
-            <div class="category">Категория: ${category}</div>
-            <div class="drop">Drop: ${drop}</div>
-            <div class="grid">
-                <div class="item"><span class="label">Траты</span><span class="val ${isFree?'free':''}">${cost}</span></div>
-                <div class="item"><span class="label">Время</span><span class="val">${time}</span></div>
-                <div class="item"><span class="label">Инвестиции</span><span class="val">${raised}</span></div>
-                <div class="item"><span class="label">Тип</span><span class="val">${type}</span></div>
-                <div class="item"><span class="label">Potential</span><span class="val">${potential}</span></div>
-            </div>
-            <div class="btns">
-                ${guideBtn}
-                ${refBtn}
-            </div>
-        </div>`;
-        container.innerHTML+=card;
-    });
+const refBtn = ref
+? `<a href="${ref}" target="_blank" class="btn btn-main">Фармить</a>`
+: `<div class="btn btn-main disabled">Фармить</div>`;
 
+const card=`
+<div class="card">
+<div class="status-badge">${status}</div>
+<span class="title">${name}</span>
+<div class="category">Категория: ${category}</div>
+<div class="drop">Drop: ${drop}</div>
+<div class="grid">
+<div class="item"><span class="label">Траты</span><span class="val ${isFree?'free':''}">${cost}</span></div>
+<div class="item"><span class="label">Время</span><span class="val">${time}</span></div>
+<div class="item"><span class="label">Инвестиции</span><span class="val">${raised}</span></div>
+<div class="item"><span class="label">Тип</span><span class="val">${type}</span></div>
+<div class="item"><span class="label">Potential</span><span class="val">${potential}</span></div>
+</div>
+<div class="btns">
+${guideBtn}
+${refBtn}
+</div>
+</div>`;
+container.innerHTML+=card;
+});
 }catch(error){
-    document.getElementById('app').innerHTML=`<div class="loading">Ошибка: ${error.message}</div>`;
+document.getElementById('app').innerHTML=`<div class="loading">Ошибка: ${error.message}</div>`;
 }
 }
 
 loadData();
 
-// Бегущая строка крипты с Gas для ETH
+// ----------------------
+// Крипто бегущая строка
+// ----------------------
 async function loadCryptoTicker(){
-    const ticker = document.getElementById('crypto-ticker');
-    try{
-        const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,ton,celestia,arbitrum,sui,strk,jupiter,binancecoin&vs_currencies=usd');
-        const data = await res.json();
+const ticker = document.getElementById('crypto-ticker');
+try{
+const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,ton,celestia,arbitrum,sui,strk,jupiter,binancecoin&vs_currencies=usd');
+const data = await res.json();
 
-        // Получаем Gas для ETH
-        let ethGas = '';
-        try{
-            const gasRes = await fetch('https://ethgasstation.info/api/ethgasAPI.json?api-key=YOUR_API_KEY');
-            const gasData = await gasRes.json();
-            ethGas = ` | ETH Gas: ${Math.round(gasData.average/10)} Gwei`;
-        }catch(e){
-            ethGas = ' | ETH Gas: —';
-        }
-
-        let text = `BTC: $${data.bitcoin.usd} — база всего рынка | ETH: $${data.ethereum.usd} — главная сеть для крупных дропов${ethGas} | SOL: $${data.solana.usd} — топ-1 сеть по количеству новых проектов | TON: $${data.ton.usd} — Telegram | TIA: $${data.celestia.usd} — стейкинг | ARB: $${data.arbitrum.usd} — L2 сеть | SUI: $${data.sui.usd} — быстрые транзакции | STRK: $${data.strk.usd} — ориентир проектов | JUP: $${data.jupiter.usd} — агрегатор Solana | BNB: $${data.binancecoin.usd} — BSC сеть`;
-
-        ticker.innerText = text;
-
-        let offset = ticker.offsetWidth;
-        function scroll(){
-            offset--;
-            if(offset < -ticker.scrollWidth) offset = ticker.offsetWidth;
-            ticker.style.transform = `translateX(${offset}px)`;
-            requestAnimationFrame(scroll);
-        }
-        scroll();
-
-    }catch(e){
-        ticker.innerText = "Не удалось загрузить курс крипты";
-    }
+// ETH Gas
+let ethGas='';
+try{
+const gasRes = await fetch('https://www.etherchain.org/api/gasPriceOracle');
+const gasData = await gasRes.json();
+ethGas = ` | ETH Gas: ${Math.round(gasData.standard)} Gwei`;
+}catch(e){
+ethGas = ' | ETH Gas: —';
 }
 
-// загружаем при старте
-loadCryptoTicker();
+let text = `BTC: $${data.bitcoin.usd} — база всего рынка | ETH: $${data.ethereum.usd} — главная сеть для крупных дропов${ethGas} | SOL: $${data.solana.usd} — топ-1 сеть по количеству новых проектов | TON: $${data.ton.usd} — Telegram | TIA: $${data.celestia.usd} — стейкинг | ARB: $${data.arbitrum.usd} — L2 сеть | SUI: $${data.sui.usd} — быстрые транзакции | STRK: $${data.strk.usd} — ориентир проектов | JUP: $${data.jupiter.usd} — агрегатор Solana | BNB: $${data.binancecoin.usd} — BSC сеть`;
 
-// обновление каждые 30 секунд
-setInterval(loadCryptoTicker, 30000);
+ticker.innerText = text;
+
+// бегущая строка
+let offset = ticker.offsetWidth;
+function scroll(){
+offset--;
+if(offset < -ticker.scrollWidth) offset = ticker.offsetWidth;
+ticker.style.transform = `translateX(${offset}px)`;
+requestAnimationFrame(scroll);
+}
+scroll();
+
+}catch(e){
+ticker.innerText = "Не удалось загрузить курс крипты";
+}
+}
+
+loadCryptoTicker();
+setInterval(loadCryptoTicker,30000);
 </script>
 
 </body>
