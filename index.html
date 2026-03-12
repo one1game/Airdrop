@@ -1,243 +1,289 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Airdrop Terminal</title>
-    <style>
-        :root { 
-            --bg: #0d1117; 
-            --card: #161b22; 
-            --accent: #58a6ff; 
-            --text: #c9d1d9; 
-            --dim: #8b949e; 
-            --green: #238636;
-        }
-        
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            background: var(--bg); 
-            color: var(--text); 
-            margin: 0; 
-            padding: 15px; 
-        }
-        
-        .header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            border-bottom: 1px solid #30363d; 
-            padding-bottom: 10px; 
-            margin-bottom: 20px; 
-        }
-        
-        .header h1 { 
-            font-size: 18px; 
-            color: var(--accent); 
-            margin: 0; 
-            text-transform: uppercase;
-        }
-        
-        #app { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 15px; 
-        }
-        
-        .card { 
-            background: var(--card); 
-            border: 1px solid #30363d; 
-            border-radius: 12px; 
-            padding: 16px; 
-        }
-        
-        .title { 
-            font-size: 20px; 
-            font-weight: bold; 
-            margin-bottom: 12px; 
-            display: block;
-        }
-        
-        .status-badge {
-            display: inline-block;
-            background: var(--green);
-            color: white;
-            font-size: 10px;
-            padding: 4px 8px;
-            border-radius: 4px;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-        }
-        
-        .grid { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 10px; 
-            margin-bottom: 15px; 
-        }
-        
-        .item { 
-            background: rgba(255,255,255,0.03); 
-            padding: 10px; 
-            border-radius: 8px; 
-        }
-        
-        .label { 
-            font-size: 10px; 
-            color: var(--dim); 
-            display: block; 
-            text-transform: uppercase; 
-            margin-bottom: 4px; 
-        }
-        
-        .val { 
-            font-size: 14px; 
-            font-weight: 600; 
-        }
-        
-        .val.free {
-            color: #7ee787;
-        }
-        
-        .type {
-            grid-column: span 2;
-            background: rgba(88,166,255,0.1);
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 13px;
-        }
-        
-        .btns { 
-            display: flex; 
-            gap: 10px; 
-        }
-        
-        .btn { 
-            flex: 1; 
-            padding: 12px; 
-            border-radius: 8px; 
-            text-align: center; 
-            text-decoration: none; 
-            font-weight: bold; 
-            font-size: 14px; 
-            transition: 0.2s; 
-        }
-        
-        .btn-guide { 
-            background: #30363d; 
-            color: white; 
-        }
-        
-        .btn-main { 
-            background: var(--accent); 
-            color: #0d1117; 
-        }
-        
-        .btn:active { 
-            transform: scale(0.98); 
-        }
-        
-        .loading { 
-            text-align: center; 
-            color: var(--dim); 
-            margin-top: 50px; 
-        }
-        
-        .counter {
-            font-size: 12px;
-            color: var(--dim);
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Airdrop Terminal</title>
+
+<!-- Telegram Mini App API -->
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+<style>
+:root { 
+--bg: #0d1117; 
+--card: #161b22; 
+--accent: #58a6ff; 
+--text: #c9d1d9; 
+--dim: #8b949e; 
+--green: #238636;
+}
+
+body { 
+font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+background: var(--bg); 
+color: var(--text); 
+margin: 0; 
+padding: 15px; 
+}
+
+.header { 
+display: flex; 
+justify-content: space-between; 
+align-items: center; 
+border-bottom: 1px solid #30363d; 
+padding-bottom: 10px; 
+margin-bottom: 20px; 
+}
+
+.header h1 { 
+font-size: 18px; 
+color: var(--accent); 
+margin: 0; 
+text-transform: uppercase;
+}
+
+.counter {
+font-size: 12px;
+color: var(--dim);
+}
+
+.user {
+font-size: 12px;
+color: var(--dim);
+margin-top:5px;
+}
+
+#app { 
+display: flex; 
+flex-direction: column; 
+gap: 15px; 
+}
+
+.card { 
+background: var(--card); 
+border: 1px solid #30363d; 
+border-radius: 12px; 
+padding: 16px; 
+}
+
+.title { 
+font-size: 20px; 
+font-weight: bold; 
+margin-bottom: 12px; 
+display: block;
+}
+
+.status-badge {
+display: inline-block;
+background: var(--green);
+color: white;
+font-size: 10px;
+padding: 4px 8px;
+border-radius: 4px;
+margin-bottom: 10px;
+text-transform: uppercase;
+}
+
+.grid { 
+display: grid; 
+grid-template-columns: 1fr 1fr; 
+gap: 10px; 
+margin-bottom: 15px; 
+}
+
+.item { 
+background: rgba(255,255,255,0.03); 
+padding: 10px; 
+border-radius: 8px; 
+}
+
+.label { 
+font-size: 10px; 
+color: var(--dim); 
+display: block; 
+text-transform: uppercase; 
+margin-bottom: 4px; 
+}
+
+.val { 
+font-size: 14px; 
+font-weight: 600; 
+}
+
+.val.free {
+color: #7ee787;
+}
+
+.btns { 
+display: flex; 
+gap: 10px; 
+}
+
+.btn { 
+flex: 1; 
+padding: 12px; 
+border-radius: 8px; 
+text-align: center; 
+text-decoration: none; 
+font-weight: bold; 
+font-size: 14px; 
+transition: 0.2s; 
+}
+
+.btn-guide { 
+background: #30363d; 
+color: white; 
+}
+
+.btn-main { 
+background: var(--accent); 
+color: #0d1117; 
+}
+
+.btn:active { 
+transform: scale(0.98); 
+}
+
+.loading { 
+text-align: center; 
+color: var(--dim); 
+margin-top: 50px; 
+}
+</style>
 </head>
+
 <body>
 
-    <div class="header">
-        <h1>Airdrop Terminal</h1>
-        <div class="counter" id="counter">0 проектов</div>
-    </div>
+<div class="header">
+<div>
+<h1>Airdrop Terminal</h1>
+<div class="user" id="user"></div>
+</div>
+<div class="counter" id="counter">0 проектов</div>
+</div>
 
-    <div id="app">
-        <div class="loading">Загрузка...</div>
-    </div>
+<div id="app">
+<div class="loading">Загрузка...</div>
+</div>
 
-    <script>
-        // Твой API
-        const API_URL = 'https://api.sheetbest.com/sheets/3722b65c-1f74-43cc-ab93-fee225a8c419';
+<script>
 
-        async function loadData() {
-            try {
-                const response = await fetch(API_URL);
-                const data = await response.json();
-                const container = document.getElementById('app');
-                
-                if (!data || data.length === 0) {
-                    container.innerHTML = '<div class="loading">Нет данных</div>';
-                    return;
-                }
+//////////////////////////
+// Telegram Mini App API
+//////////////////////////
 
-                // Счетчик
-                document.getElementById('counter').innerHTML = `${data.length} проектов`;
-                container.innerHTML = '';
+const tg = window.Telegram.WebApp;
 
-                // Перебираем данные
-                data.forEach(item => {
-                    // Только твои поля: id, name, status, cost, time, raised, type, guide_link, ref_link
-                    const name = item.name || 'Без названия';
-                    const status = item.status || 'Active';
-                    const cost = item.cost || '$0';
-                    const time = item.time || '—';
-                    const raised = item.raised || '—';
-                    const type = item.type || '—';
-                    const guide = item.guide_link || '#';
-                    const ref = item.ref_link || '#';
-                    
-                    // Проверка на бесплатно
-                    const isFree = cost === '$0' || cost === '0' || cost === 'Бесплатно';
-                    
-                    // Создаем карточку
-                    const card = `
-                        <div class="card">
-                            <div class="status-badge">${status}</div>
-                            <span class="title">${name}</span>
-                            
-                            <div class="grid">
-                                <div class="item">
-                                    <span class="label">Траты</span>
-                                    <span class="val ${isFree ? 'free' : ''}">${cost}</span>
-                                </div>
-                                <div class="item">
-                                    <span class="label">Время</span>
-                                    <span class="val">${time}</span>
-                                </div>
-                                <div class="item">
-                                    <span class="label">Собрано</span>
-                                    <span class="val">${raised}</span>
-                                </div>
-                                <div class="item">
-                                    <span class="label">Тип</span>
-                                    <span class="val">${type}</span>
-                                </div>
-                            </div>
-                            
-                            <div class="btns">
-                                <a href="${guide}" target="_blank" class="btn btn-guide">Инструкция</a>
-                                <a href="${ref}" target="_blank" class="btn btn-main">Фармить</a>
-                            </div>
-                        </div>
-                    `;
-                    
-                    container.innerHTML += card;
-                });
+tg.ready();
+tg.expand();
 
-            } catch (error) {
-                document.getElementById('app').innerHTML = `
-                    <div class="loading">Ошибка: ${error.message}</div>
-                `;
-            }
-        }
+let user = tg.initDataUnsafe?.user;
 
-        // Запускаем
-        loadData();
-    </script>
+if(user){
+document.getElementById("user").innerHTML =
+`User: ${user.username || user.first_name}`;
+}
+
+//////////////////////////
+// API таблицы
+//////////////////////////
+
+const API_URL = 'https://api.sheetbest.com/sheets/3722b65c-1f74-43cc-ab93-fee225a8c419';
+
+async function loadData() {
+
+try {
+
+const response = await fetch(API_URL);
+const data = await response.json();
+
+const container = document.getElementById('app');
+
+if (!data || data.length === 0) {
+container.innerHTML = '<div class="loading">Нет данных</div>';
+return;
+}
+
+document.getElementById('counter').innerHTML = `${data.length} проектов`;
+
+container.innerHTML = '';
+
+data.forEach(item => {
+
+const name = item.name || 'Без названия';
+const status = item.status || 'Active';
+const cost = item.cost || '$0';
+const time = item.time || '—';
+const raised = item.raised || '—';
+const type = item.type || '—';
+const guide = item.guide_link || '#';
+const ref = item.ref_link || '#';
+
+const isFree = cost === '$0' || cost === '0' || cost === 'Бесплатно';
+
+const card = `
+<div class="card">
+
+<div class="status-badge">${status}</div>
+
+<span class="title">${name}</span>
+
+<div class="grid">
+
+<div class="item">
+<span class="label">Траты</span>
+<span class="val ${isFree ? 'free' : ''}">${cost}</span>
+</div>
+
+<div class="item">
+<span class="label">Время</span>
+<span class="val">${time}</span>
+</div>
+
+<div class="item">
+<span class="label">Собрано</span>
+<span class="val">${raised}</span>
+</div>
+
+<div class="item">
+<span class="label">Тип</span>
+<span class="val">${type}</span>
+</div>
+
+</div>
+
+<div class="btns">
+
+<a href="${guide}" target="_blank" class="btn btn-guide">
+Инструкция
+</a>
+
+<a href="${ref}" target="_blank" class="btn btn-main">
+Фармить
+</a>
+
+</div>
+
+</div>
+`;
+
+container.innerHTML += card;
+
+});
+
+}
+catch(error){
+
+document.getElementById('app').innerHTML =
+`<div class="loading">Ошибка: ${error.message}</div>`;
+
+}
+
+}
+
+loadData();
+
+</script>
+
 </body>
 </html>
