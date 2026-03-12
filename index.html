@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -145,6 +146,11 @@ background:var(--accent);
 color:#0d1117;
 }
 
+.disabled{
+opacity:0.35;
+pointer-events:none;
+}
+
 .loading{
 text-align:center;
 color:var(--dim);
@@ -181,7 +187,7 @@ document.getElementById("user").innerHTML =
 `User: ${user.username || user.first_name}`;
 }
 
-// таблица
+// API таблицы
 const API_URL='https://api.sheetbest.com/sheets/3722b65c-1f74-43cc-ab93-fee225a8c419';
 
 async function loadData(){
@@ -202,7 +208,7 @@ document.getElementById('counter').innerHTML=`${data.length} проектов`;
 
 container.innerHTML='';
 
-// сортировка по priority (скрыто для пользователей)
+// сортировка по priority (для админа)
 data.sort((a,b)=> (a.priority||99)-(b.priority||99));
 
 data.forEach(item=>{
@@ -215,11 +221,20 @@ const time=item.time||'—';
 const raised=item.raised||'—';
 const type=item.type||'—';
 const potential=item.potential||'—';
-const guide=item.guide_link||'#';
-const ref=item.ref_link||'#';
+const guide=item.guide_link||'';
+const ref=item.ref_link||'';
 const drop=item.drop_date||'—';
 
 const isFree=cost==='$0'||cost==='0'||cost==='Бесплатно';
+
+// кнопки
+const guideBtn = guide
+? `<a href="${guide}" target="_blank" class="btn btn-guide">Инструкция</a>`
+: `<div class="btn btn-guide disabled">Инструкция</div>`;
+
+const refBtn = ref
+? `<a href="${ref}" target="_blank" class="btn btn-main">Фармить</a>`
+: `<div class="btn btn-main disabled">Фармить</div>`;
 
 const card=`
 
@@ -263,15 +278,8 @@ const card=`
 </div>
 
 <div class="btns">
-
-<a href="${guide}" target="_blank" class="btn btn-guide">
-Инструкция
-</a>
-
-<a href="${ref}" target="_blank" class="btn btn-main">
-Фармить
-</a>
-
+${guideBtn}
+${refBtn}
 </div>
 
 </div>
