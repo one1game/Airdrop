@@ -14,7 +14,8 @@
 --accent:#58a6ff;
 --text:#c9d1d9;
 --dim:#8b949e;
---green:#238636;
+--green:#3fb950;
+--red:#f85149;
 --yellow:#f2cc60;
 }
 
@@ -32,7 +33,7 @@ justify-content:space-between;
 align-items:center;
 border-bottom:1px solid #30363d;
 padding-bottom:10px;
-margin-bottom:20px;
+margin-bottom:10px;
 }
 
 .header h1{
@@ -45,13 +46,33 @@ text-transform:uppercase;
 .counter{font-size:12px;color:var(--dim);}
 .user{font-size:12px;color:var(--dim);margin-top:5px;}
 
-#ticker{
-font-size:12px;
-color:#f2cc60;
-margin-bottom:10px;
-white-space:nowrap;
+#ticker-wrapper{
+width:100%;
 overflow:hidden;
+margin-bottom:15px;
+border-bottom:1px solid #30363d;
+padding-bottom:8px;
 }
+
+#ticker{
+display:inline-block;
+white-space:nowrap;
+animation:tickerMove 40s linear infinite;
+font-size:13px;
+}
+
+@keyframes tickerMove{
+0%{transform:translateX(100%)}
+100%{transform:translateX(-100%)}
+}
+
+.coin{
+margin-right:35px;
+font-weight:600;
+}
+
+.green{color:var(--green)}
+.red{color:var(--red)}
 
 #app{
 display:flex;
@@ -75,7 +96,7 @@ display:block;
 
 .status-badge{
 display:inline-block;
-background:var(--green);
+background:#238636;
 color:white;
 font-size:10px;
 padding:4px 8px;
@@ -176,7 +197,9 @@ margin-top:50px;
 <div class="counter" id="counter">0 проектов</div>
 </div>
 
-<div id="ticker">Загрузка курсов...</div>
+<div id="ticker-wrapper">
+<div id="ticker">Загрузка крипто курсов...</div>
+</div>
 
 <div id="app">
 <div class="loading">Загрузка...</div>
@@ -196,44 +219,75 @@ document.getElementById("user").innerHTML =
 `User: ${user.username || user.first_name}`;
 }
 
-// ======================
-// КРИПТО БЕГУЩАЯ СТРОКА
-// ======================
+// ============================
+// CRYPTO TICKER
+// ============================
+
+let lastPrices = {};
 
 async function loadTicker(){
 
 try{
 
-const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,the-open-network,grass,pixels&vs_currencies=usd");
+const res = await fetch(
+"https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,the-open-network,grass,pixels&vs_currencies=usd"
+);
 
 const d = await res.json();
 
-const text =
-`BTC $${d.bitcoin?.usd ?? "-"} | 
-ETH $${d.ethereum?.usd ?? "-"} | 
-SOL $${d.solana?.usd ?? "-"} | 
-TON $${d["the-open-network"]?.usd ?? "-"} | 
-GRASS $${d.grass?.usd ?? "-"} | 
-PIXEL $${d.pixels?.usd ?? "-"}`;
+const coins = [
+["BTC","bitcoin"],
+["ETH","ethereum"],
+["SOL","solana"],
+["TON","the-open-network"],
+["GRASS","grass"],
+["PIXEL","pixels"]
+];
 
-const ticker = document.getElementById("ticker");
+let html="";
 
-ticker.innerText = text;
+coins.forEach(c=>{
 
-let pos = ticker.offsetWidth;
+let name=c[0];
+let id=c[1];
 
-function scroll(){
-pos--;
-if(pos < -ticker.scrollWidth) pos = ticker.offsetWidth;
-ticker.style.transform = `translateX(${pos}px)`;
-requestAnimationFrame(scroll);
+let price=d[id]?.usd;
+
+if(!price){
+html+=`<span class="coin">${name}: —</span>`;
+return;
 }
 
-scroll();
+let prev=lastPrices[id];
+
+let color="";
+let arrow="";
+
+if(prev){
+
+if(price>prev){
+color="green";
+arrow="⬆";
+}else if(price<prev){
+color="red";
+arrow="⬇";
+}
+
+}
+
+lastPrices[id]=price;
+
+html+=`<span class="coin ${color}">
+${name}: $${price} ${arrow}
+</span>`;
+
+});
+
+document.getElementById("ticker").innerHTML=html;
 
 }catch(e){
 
-document.getElementById("ticker").innerText = "Не удалось загрузить курсы";
+document.getElementById("ticker").innerText="Не удалось загрузить крипто курсы";
 
 }
 
@@ -242,10 +296,9 @@ document.getElementById("ticker").innerText = "Не удалось загруз�
 loadTicker();
 setInterval(loadTicker,30000);
 
-
-// ======================
-// API таблицы
-// ======================
+// ============================
+// AIRDROP DATA
+// ============================
 
 const API_URL='https://api.sheetbest.com/sheets/3722b65c-1f74-43cc-ab93-fee225a8c419';
 
@@ -267,7 +320,6 @@ document.getElementById('counter').innerHTML=`${data.length} проектов`;
 
 container.innerHTML='';
 
-// сортировка по priority (для админа)
 data.sort((a,b)=> (a.priority||99)-(b.priority||99));
 
 data.forEach(item=>{
@@ -286,7 +338,6 @@ const drop=item.drop_date||'—';
 
 const isFree=cost==='$0'||cost==='0'||cost==='Бесплатно';
 
-// кнопки
 const guideBtn = guide
 ? `<a href="${guide}" target="_blank" class="btn btn-guide">Инструкция</a>`
 : `<div class="btn btn-guide disabled">Инструкция</div>`;
