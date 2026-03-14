@@ -45,6 +45,14 @@ text-transform:uppercase;
 .counter{font-size:12px;color:var(--dim);}
 .user{font-size:12px;color:var(--dim);margin-top:5px;}
 
+#ticker{
+font-size:12px;
+color:#f2cc60;
+margin-bottom:10px;
+white-space:nowrap;
+overflow:hidden;
+}
+
 #app{
 display:flex;
 flex-direction:column;
@@ -168,6 +176,8 @@ margin-top:50px;
 <div class="counter" id="counter">0 проектов</div>
 </div>
 
+<div id="ticker">Загрузка курсов...</div>
+
 <div id="app">
 <div class="loading">Загрузка...</div>
 </div>
@@ -186,7 +196,57 @@ document.getElementById("user").innerHTML =
 `User: ${user.username || user.first_name}`;
 }
 
+// ======================
+// КРИПТО БЕГУЩАЯ СТРОКА
+// ======================
+
+async function loadTicker(){
+
+try{
+
+const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,the-open-network,grass,pixels&vs_currencies=usd");
+
+const d = await res.json();
+
+const text =
+`BTC $${d.bitcoin?.usd ?? "-"} | 
+ETH $${d.ethereum?.usd ?? "-"} | 
+SOL $${d.solana?.usd ?? "-"} | 
+TON $${d["the-open-network"]?.usd ?? "-"} | 
+GRASS $${d.grass?.usd ?? "-"} | 
+PIXEL $${d.pixels?.usd ?? "-"}`;
+
+const ticker = document.getElementById("ticker");
+
+ticker.innerText = text;
+
+let pos = ticker.offsetWidth;
+
+function scroll(){
+pos--;
+if(pos < -ticker.scrollWidth) pos = ticker.offsetWidth;
+ticker.style.transform = `translateX(${pos}px)`;
+requestAnimationFrame(scroll);
+}
+
+scroll();
+
+}catch(e){
+
+document.getElementById("ticker").innerText = "Не удалось загрузить курсы";
+
+}
+
+}
+
+loadTicker();
+setInterval(loadTicker,30000);
+
+
+// ======================
 // API таблицы
+// ======================
+
 const API_URL='https://api.sheetbest.com/sheets/3722b65c-1f74-43cc-ab93-fee225a8c419';
 
 async function loadData(){
