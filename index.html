@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Airdrop Terminal</title>
 
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -19,12 +19,18 @@
 --yellow:#f2cc60;
 }
 
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
 body{
 font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
 background:var(--bg);
 color:var(--text);
 margin:0;
 padding:15px;
+min-height:100vh;
 }
 
 .header{
@@ -43,8 +49,19 @@ margin:0;
 text-transform:uppercase;
 }
 
-.counter{font-size:12px;color:var(--dim);}
-.user{font-size:12px;color:var(--dim);margin-top:5px;}
+.counter{
+font-size:12px;
+color:var(--dim);
+background:var(--card);
+padding:4px 8px;
+border-radius:12px;
+}
+
+.user{
+font-size:12px;
+color:var(--dim);
+margin-top:5px;
+}
 
 #ticker-wrapper{
 width:100%;
@@ -52,6 +69,7 @@ overflow:hidden;
 margin-bottom:15px;
 border-bottom:1px solid #30363d;
 padding-bottom:8px;
+background:var(--bg);
 }
 
 #ticker{
@@ -74,6 +92,32 @@ font-weight:600;
 .green{color:var(--green)}
 .red{color:var(--red)}
 
+/* Фильтр */
+.filter-section {
+  margin-bottom: 15px;
+}
+
+.filter-select {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--card);
+  border: 1px solid #30363d;
+  border-radius: 12px;
+  color: var(--text);
+  font-size: 14px;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238b949e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  background-size: 16px;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
 #app{
 display:flex;
 flex-direction:column;
@@ -83,8 +127,30 @@ gap:15px;
 .card{
 background:var(--card);
 border:1px solid #30363d;
-border-radius:12px;
+border-radius:16px;
 padding:16px;
+transition: transform 0.2s, border-color 0.2s;
+}
+
+.card:active {
+  transform: scale(0.98);
+  border-color: var(--accent);
+}
+
+.status-badge{
+display:inline-block;
+background:#238636;
+color:white;
+font-size:10px;
+padding:4px 8px;
+border-radius:20px;
+margin-bottom:8px;
+text-transform:uppercase;
+font-weight:600;
+}
+
+.status-badge.inactive {
+  background: var(--red);
 }
 
 .title{
@@ -94,29 +160,18 @@ margin-bottom:8px;
 display:block;
 }
 
-.status-badge{
-display:inline-block;
-background:#238636;
-color:white;
-font-size:10px;
-padding:4px 8px;
-border-radius:4px;
-margin-bottom:8px;
-text-transform:uppercase;
-}
-
 .category{
 font-size:12px;
 color:var(--accent);
 font-weight:600;
-margin-bottom:8px;
+margin-bottom:4px;
 }
 
 .drop{
 font-size:12px;
 color:var(--yellow);
 font-weight:600;
-margin-bottom:10px;
+margin-bottom:12px;
 }
 
 .grid{
@@ -129,7 +184,7 @@ margin-bottom:15px;
 .item{
 background:rgba(255,255,255,0.03);
 padding:10px;
-border-radius:8px;
+border-radius:10px;
 }
 
 .label{
@@ -157,11 +212,16 @@ gap:10px;
 .btn{
 flex:1;
 padding:12px;
-border-radius:8px;
+border-radius:10px;
 text-align:center;
 text-decoration:none;
 font-weight:bold;
 font-size:14px;
+transition: opacity 0.2s;
+}
+
+.btn:active {
+  opacity: 0.7;
 }
 
 .btn-guide{
@@ -184,10 +244,73 @@ text-align:center;
 color:var(--dim);
 margin-top:50px;
 }
+
+.skeleton-card {
+  background:var(--card);
+  border:1px solid #30363d;
+  border-radius:16px;
+  padding:16px;
+  margin-bottom:15px;
+}
+
+.skeleton-line {
+  height: 20px;
+  background: linear-gradient(90deg, #30363d 25%, #3d444d 50%, #30363d 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+
+.skeleton-line.short { width: 60%; }
+.skeleton-line.medium { width: 80%; }
+
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.refresh-indicator {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: var(--accent);
+  color: white;
+  text-align: center;
+  padding: 10px;
+  font-size: 12px;
+  transform: translateY(-100%);
+  transition: transform 0.3s;
+  z-index: 1000;
+}
+
+.refresh-indicator.show {
+  transform: translateY(0);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--dim);
+  background: var(--card);
+  border-radius: 16px;
+  border: 1px solid #30363d;
+}
+
+.empty-state span {
+  font-size: 40px;
+  display: block;
+  margin-bottom: 10px;
+}
 </style>
 </head>
 
 <body>
+
+<div class="refresh-indicator" id="refreshIndicator">
+  🔄 Обновление данных...
+</div>
 
 <div class="header">
 <div>
@@ -201,8 +324,29 @@ margin-top:50px;
 <div id="ticker">Загрузка крипто курсов...</div>
 </div>
 
+<!-- Только фильтр по тратам -->
+<div class="filter-section">
+  <select class="filter-select" id="costFilter">
+    <option value="all">💎 Все проекты</option>
+    <option value="free">🆓 Только бесплатные</option>
+    <option value="paid">💰 Только платные</option>
+  </select>
+</div>
+
 <div id="app">
-<div class="loading">Загрузка...</div>
+<!-- Skeleton loading -->
+<div class="skeleton-card">
+  <div class="skeleton-line short"></div>
+  <div class="skeleton-line"></div>
+  <div class="skeleton-line medium"></div>
+  <div class="skeleton-line"></div>
+</div>
+<div class="skeleton-card">
+  <div class="skeleton-line short"></div>
+  <div class="skeleton-line"></div>
+  <div class="skeleton-line medium"></div>
+  <div class="skeleton-line"></div>
+</div>
 </div>
 
 <script>
@@ -213,25 +357,30 @@ tg.ready();
 tg.expand();
 
 let user = tg.initDataUnsafe?.user;
+let allProjects = [];
 
 if(user){
 document.getElementById("user").innerHTML =
-`User: ${user.username || user.first_name}`;
+`${user.username ? '@' + user.username : user.first_name}`;
 }
 
 // ============================
-// CRYPTO TICKER
+// CRYPTO TICKER WITH TIMEOUT
 // ============================
 
 let lastPrices = {};
 
 async function loadTicker(){
-
 try{
+const controller = new AbortController();
+const timeoutId = setTimeout(() => controller.abort(), 5000);
 
 const res = await fetch(
-"https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,the-open-network,grass,pixels&vs_currencies=usd"
+"https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,the-open-network,grass,pixels&vs_currencies=usd",
+{ signal: controller.signal }
 );
+
+clearTimeout(timeoutId);
 
 const d = await res.json();
 
@@ -247,10 +396,8 @@ const coins = [
 let html="";
 
 coins.forEach(c=>{
-
 let name=c[0];
 let id=c[1];
-
 let price=d[id]?.usd;
 
 if(!price){
@@ -259,12 +406,10 @@ return;
 }
 
 let prev=lastPrices[id];
-
 let color="";
 let arrow="";
 
 if(prev){
-
 if(price>prev){
 color="green";
 arrow="⬆";
@@ -272,145 +417,243 @@ arrow="⬆";
 color="red";
 arrow="⬇";
 }
-
 }
 
 lastPrices[id]=price;
-
-html+=`<span class="coin ${color}">
-${name}: $${price} ${arrow}
-</span>`;
-
+html+=`<span class="coin ${color}">${name}: $${price.toFixed(2)} ${arrow}</span>`;
 });
 
 document.getElementById("ticker").innerHTML=html;
 
 }catch(e){
-
-document.getElementById("ticker").innerText="Не удалось загрузить крипто курсы";
-
+document.getElementById("ticker").innerText="🔄 Не удалось загрузить курсы";
 }
-
 }
 
 loadTicker();
 setInterval(loadTicker,30000);
 
 // ============================
-// AIRDROP DATA
+// AIRDROP DATA WITH CACHE
 // ============================
 
 const API_URL='https://api.sheetbest.com/sheets/3722b65c-1f74-43cc-ab93-fee225a8c419';
+const CACHE_KEY = 'airdrop_cache';
+const CACHE_DURATION = 5 * 60 * 1000; // 5 минут
 
-async function loadData(){
-
-try{
-
-const response=await fetch(API_URL);
-let data=await response.json();
-
-const container=document.getElementById('app');
-
-if(!data || data.length===0){
-container.innerHTML='<div class="loading">Нет данных</div>';
-return;
+// Show/hide refresh indicator
+function showRefreshIndicator(show) {
+  const indicator = document.getElementById('refreshIndicator');
+  if (show) {
+    indicator.classList.add('show');
+  } else {
+    indicator.classList.remove('show');
+  }
 }
 
-document.getElementById('counter').innerHTML=`${data.length} проектов`;
+async function loadDataWithCache(forceRefresh = false) {
+  
+  if (!forceRefresh) {
+    const cached = localStorage.getItem(CACHE_KEY);
+    if (cached) {
+      try {
+        const { data, timestamp } = JSON.parse(cached);
+        if (Date.now() - timestamp < CACHE_DURATION) {
+          allProjects = data;
+          filterAndRenderProjects();
+          return;
+        }
+      } catch (e) {
+        console.log('Cache parse error');
+      }
+    }
+  }
 
-container.innerHTML='';
+  try {
+    showRefreshIndicator(true);
+    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    
+    const response = await fetch(API_URL, { signal: controller.signal });
+    clearTimeout(timeoutId);
+    
+    let data = await response.json();
+    
+    // Sort by priority
+    data.sort((a,b)=> (a.priority||99)-(b.priority||99));
+    
+    // Save to cache
+    localStorage.setItem(CACHE_KEY, JSON.stringify({
+      data,
+      timestamp: Date.now()
+    }));
+    
+    allProjects = data;
+    filterAndRenderProjects();
+    
+  } catch(error) {
+    document.getElementById('app').innerHTML = `
+      <div class="empty-state">
+        <span>😕</span>
+        <h3>Ошибка загрузки</h3>
+        <p>${error.message}</p>
+        <button onclick="loadDataWithCache(true)" style="background:var(--accent); border:none; padding:10px 20px; border-radius:8px; margin-top:10px; color:white; cursor:pointer;">Повторить</button>
+      </div>
+    `;
+  } finally {
+    showRefreshIndicator(false);
+  }
+}
 
-data.sort((a,b)=> (a.priority||99)-(b.priority||99));
+// Filter and render projects
+function filterAndRenderProjects() {
+  const costType = document.getElementById('costFilter').value;
+  
+  let filtered = [...allProjects];
+  
+  // Apply cost filter
+  if (costType === 'free') {
+    filtered = filtered.filter(p => {
+      const cost = (p.cost || '').toLowerCase();
+      return cost === '$0' || cost === '0' || cost === 'бесплатно' || cost.includes('free') || cost.includes('0$');
+    });
+  } else if (costType === 'paid') {
+    filtered = filtered.filter(p => {
+      const cost = (p.cost || '').toLowerCase();
+      return !(cost === '$0' || cost === '0' || cost === 'бесплатно' || cost.includes('free') || cost.includes('0$'));
+    });
+  }
+  
+  renderProjects(filtered);
+  document.getElementById('counter').innerHTML = `${filtered.length} проектов`;
+}
 
-data.forEach(item=>{
+// Render projects using DocumentFragment
+function renderProjects(projects) {
+  const container = document.getElementById('app');
+  container.innerHTML = '';
+  
+  if (!projects || projects.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <span>🔍</span>
+        <h3>Проекты не найдены</h3>
+        <p>Попробуйте изменить фильтр</p>
+      </div>
+    `;
+    return;
+  }
+  
+  const fragment = document.createDocumentFragment();
+  
+  projects.forEach(item => {
+    const card = createCardElement(item);
+    fragment.appendChild(card);
+  });
+  
+  container.appendChild(fragment);
+}
 
-const name=item.name||'Без названия';
-const status=item.status||'ACTIVE';
-const category=item.category||'—';
-const cost=item.cost||'$0';
-const time=item.time||'—';
-const raised=item.raised||'—';
-const type=item.type||'—';
-const potential=item.potential||'—';
-const guide=item.guide_link||'';
-const ref=item.ref_link||'';
-const drop=item.drop_date||'—';
+// Create card element
+function createCardElement(item) {
+  const card = document.createElement('div');
+  card.className = 'card';
+  
+  const name = item.name || 'Без названия';
+  const status = item.status || 'ACTIVE';
+  const category = item.category || '—';
+  const cost = item.cost || '$0';
+  const time = item.time || '—';
+  const raised = item.raised || '—';
+  const type = item.type || '—';
+  const potential = item.potential || '—';
+  const guide = item.guide_link || '';
+  const ref = item.ref_link || '';
+  const drop = item.drop_date || '—';
+  
+  const isFree = cost === '$0' || cost === '0' || cost === 'Бесплатно' || cost.toLowerCase().includes('free');
+  
+  card.innerHTML = `
+    <div class="status-badge ${status !== 'ACTIVE' ? 'inactive' : ''}">${status}</div>
+    <span class="title">${name}</span>
+    <div class="category">📁 ${category}</div>
+    <div class="drop">📅 Drop: ${drop}</div>
+    <div class="grid">
+      <div class="item">
+        <span class="label">💰 Траты</span>
+        <span class="val ${isFree ? 'free' : ''}">${cost}</span>
+      </div>
+      <div class="item">
+        <span class="label">⏱️ Время</span>
+        <span class="val">${time}</span>
+      </div>
+      <div class="item">
+        <span class="label">💵 Инвестиции</span>
+        <span class="val">${raised}</span>
+      </div>
+      <div class="item">
+        <span class="label">📊 Тип</span>
+        <span class="val">${type}</span>
+      </div>
+      <div class="item">
+        <span class="label">🎯 Potential</span>
+        <span class="val">${potential}</span>
+      </div>
+    </div>
+    <div class="btns">
+      ${guide ? `<a href="${guide}" target="_blank" class="btn btn-guide">📖 Инструкция</a>` : '<div class="btn btn-guide disabled">📖 Инструкция</div>'}
+      ${ref ? `<a href="${ref}" target="_blank" class="btn btn-main">🚀 Фармить</a>` : '<div class="btn btn-main disabled">🚀 Фармить</div>'}
+    </div>
+  `;
+  
+  return card;
+}
 
-const isFree=cost==='$0'||cost==='0'||cost==='Бесплатно';
+// ============================
+// PULL TO REFRESH
+// ============================
 
-const guideBtn = guide
-? `<a href="${guide}" target="_blank" class="btn btn-guide">Инструкция</a>`
-: `<div class="btn btn-guide disabled">Инструкция</div>`;
+let startY = 0;
+let pulling = false;
 
-const refBtn = ref
-? `<a href="${ref}" target="_blank" class="btn btn-main">Фармить</a>`
-: `<div class="btn btn-main disabled">Фармить</div>`;
-
-const card=`
-
-<div class="card">
-
-<div class="status-badge">${status}</div>
-
-<span class="title">${name}</span>
-
-<div class="category">Категория: ${category}</div>
-
-<div class="drop">Drop: ${drop}</div>
-
-<div class="grid">
-
-<div class="item">
-<span class="label">Траты</span>
-<span class="val ${isFree?'free':''}">${cost}</span>
-</div>
-
-<div class="item">
-<span class="label">Время</span>
-<span class="val">${time}</span>
-</div>
-
-<div class="item">
-<span class="label">Инвестиции</span>
-<span class="val">${raised}</span>
-</div>
-
-<div class="item">
-<span class="label">Тип</span>
-<span class="val">${type}</span>
-</div>
-
-<div class="item">
-<span class="label">Potential</span>
-<span class="val">${potential}</span>
-</div>
-
-</div>
-
-<div class="btns">
-${guideBtn}
-${refBtn}
-</div>
-
-</div>
-`;
-
-container.innerHTML+=card;
-
+document.addEventListener('touchstart', (e) => {
+  if (window.scrollY === 0) {
+    startY = e.touches[0].clientY;
+    pulling = true;
+  }
 });
 
-}
+document.addEventListener('touchmove', (e) => {
+  if (pulling && window.scrollY === 0) {
+    const diff = e.touches[0].clientY - startY;
+    if (diff > 80) {
+      showRefreshIndicator(true);
+    }
+  }
+});
 
-catch(error){
+document.addEventListener('touchend', (e) => {
+  if (pulling && window.scrollY === 0) {
+    const diff = e.changedTouches[0].clientY - startY;
+    if (diff > 80) {
+      loadDataWithCache(true);
+      loadTicker();
+    }
+  }
+  pulling = false;
+  setTimeout(() => showRefreshIndicator(false), 1000);
+});
 
-document.getElementById('app').innerHTML=
-`<div class="loading">Ошибка: ${error.message}</div>`;
+// ============================
+// EVENT LISTENERS
+// ============================
 
-}
+// Filter change
+document.getElementById('costFilter').addEventListener('change', filterAndRenderProjects);
 
-}
-
-loadData();
+// Initial load
+loadDataWithCache();
 
 </script>
 
