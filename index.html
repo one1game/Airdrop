@@ -461,7 +461,7 @@ margin-top:50px;
       📱 Подписаться
     </button>
     
-    <button class="check-btn" id="checkBtn" onclick="checkSubscription()">
+    <button class="check-btn" id="checkBtn" onclick="checkSubscription(true)">
       ✅ Проверить подписку
     </button>
     
@@ -522,11 +522,9 @@ tg.expand();
 
 // Настройки канала
 const CHANNEL_USERNAME = "airdrop_depin_news"; // Без @
-const BOT_TOKEN = "8678872253:AAGYnHKSY7Poc4DfyAnaupHMykX4W2yD-PM"; // ⚠️ ВСТАВЬТЕ СВОЙ ТОКЕН БОТА
 
 let user = tg.initDataUnsafe?.user;
 let allProjects = [];
-let checkAttempts = 0;
 
 if(user){
 document.getElementById("user").innerHTML =
@@ -534,58 +532,73 @@ document.getElementById("user").innerHTML =
 }
 
 // ============================
-// ПРОВЕРКА ПОДПИСКИ
+// ПРОВЕРКА ПОДПИСКИ ЧЕРЕЗ API (БЕЗОПАСНО)
 // ============================
 
-async function checkSubscription() {
+async function checkSubscription(isManualClick = false) {
   const errorMessage = document.getElementById('errorMessage');
   const checkBtn = document.getElementById('checkBtn');
+  const overlay = document.getElementById('subscribeOverlay');
+  const mainContent = document.getElementById('mainContent');
   
   if (!user) {
-    errorMessage.textContent = "❌ Не удалось определить пользователя";
-    errorMessage.classList.add('show');
+    if (isManualClick) {
+      errorMessage.textContent = "❌ Не удалось определить пользователя";
+      errorMessage.classList.add('show');
+    }
     return;
   }
   
-  checkBtn.disabled = true;
-  checkBtn.textContent = "⏳ Проверка...";
-  errorMessage.classList.remove('show');
+  if (isManualClick) {
+    checkBtn.disabled = true;
+    checkBtn.textContent = "⏳ Проверка...";
+    errorMessage.classList.remove('show');
+  }
   
   try {
-    // Используем Telegram API для проверки подписки
-    const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getChatMember?chat_id=@${CHANNEL_USERNAME}&user_id=${user.id}`);
+    // Запрос к твоему API на Vercel
+    const response = await fetch(`/api/check?userId=${user.id}`);
     const data = await response.json();
     
-    if (data.ok) {
-      const status = data.result.status;
-      // Статусы: creator, administrator, member, restricted, left, kicked
-      if (status === 'member' || status === 'administrator' || status === 'creator') {
-        // Подписка подтверждена
-        localStorage.setItem('subscribed', 'true');
-        document.getElementById('subscribeOverlay').style.display = 'none';
-        document.getElementById('mainContent').classList.add('visible');
-        loadDataWithCache(); // Загружаем данные
-      } else {
-        errorMessage.textContent = "❌ Вы не подписаны на канал";
-        errorMessage.classList.add('show');
-        checkAttempts++;
-        
-        if (checkAttempts >= 3) {
-          errorMessage.textContent += " Попробуйте открыть канал и подписаться";
-        }
+    if (data.subscribed) {
+      // Подписка подтверждена
+      localStorage.setItem('subscribed_id', user.id);
+      overlay.style.display = 'none';
+      mainContent.classList.add('visible');
+      
+      // Загружаем данные, если еще не загружены
+      if (allProjects.length === 0) {
+        loadDataWithCache();
+      }
+      
+      if (isManualClick && tg.HapticFeedback) {
+        tg.HapticFeedback.notificationOccurred('success');
       }
     } else {
-      throw new Error('API Error');
+      if (isManualClick) {
+        errorMessage.textContent = "❌ Вы не подписаны на канал";
+        errorMessage.classList.add('show');
+        if (tg.HapticFeedback) {
+          tg.HapticFeedback.notificationOccurred('error');
+        }
+      } else {
+        // Автоматическая проверка не удалась - показываем оверлей
+        overlay.style.display = 'flex';
+        mainContent.classList.remove('visible');
+      }
     }
   } catch (error) {
     console.error('Subscription check error:', error);
     
-    // Если не удалось проверить через API, показываем кнопку подписки
-    errorMessage.textContent = "❌ Не удалось проверить подписку. Убедитесь, что вы подписались и нажмите 'Проверить' снова";
-    errorMessage.classList.add('show');
+    if (isManualClick) {
+      errorMessage.textContent = "❌ Ошибка сервера. Попробуйте позже.";
+      errorMessage.classList.add('show');
+    }
   } finally {
-    checkBtn.disabled = false;
-    checkBtn.textContent = "✅ Проверить подписку";
+    if (isManualClick) {
+      checkBtn.disabled = false;
+      checkBtn.textContent = "✅ Проверить подписку";
+    }
   }
 }
 
@@ -602,18 +615,13 @@ function openChannel() {
   setTimeout(() => {
     errorMessage.style.color = "var(--red)";
     errorMessage.textContent = "❌ Вы еще не подписались на канал";
-  }, 3000);
+  }, 4000);
 }
 
-// Проверяем при загрузке, был ли пользователь уже подписан
+// Проверяем при загрузке страницы
 window.addEventListener('load', () => {
-  const subscribed = localStorage.getItem('subscribed');
-  if (subscribed === 'true') {
-    // Проверяем заново, так как подписка могла пропасть
-    checkSubscription();
-  } else {
-    document.getElementById('subscribeOverlay').style.display = 'flex';
-  }
+  // При каждом входе проверяем подписку
+  checkSubscription(false);
 });
 
 // ============================
@@ -878,12 +886,18 @@ document.addEventListener('touchmove', (e) => {
   }
 });
 
-document.addEventListener('touchend', (e) => {
+document.addEventListener('touchend', async (e) => {
   if (pulling && window.scrollY === 0) {
     const diff = e.changedTouches[0].clientY - startY;
     if (diff > 80) {
-      loadDataWithCache(true);
-      loadTicker();
+      showRefreshIndicator(true);
+      // При свайпе вниз сначала проверяем подписку
+      await checkSubscription(false);
+      // Если подписка есть, обновляем данные
+      if (document.getElementById('mainContent').classList.contains('visible')) {
+        loadDataWithCache(true);
+        loadTicker();
+      }
     }
   }
   pulling = false;
